@@ -3,7 +3,8 @@ import type { GenerateContentResponse } from "@google/genai";
 import { geminiKeyAlias } from "./key-alias";
 
 export const DEFAULT_IMAGE_MODEL = "gemini-3-pro-image-preview";
-export const DEFAULT_TEXT_MODEL = "gemini-2.0-flash";
+/** Текстовые вызовы (анализ фото, фандома, пул сцен). gemini-2.0-flash отключён для новых ключей — см. модели в документации Gemini API. */
+export const DEFAULT_TEXT_MODEL = "gemini-2.5-flash";
 
 export interface GenerateSceneImageParams {
   apiKey: string;

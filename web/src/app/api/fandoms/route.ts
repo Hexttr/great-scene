@@ -19,7 +19,7 @@ const structuredSchema = z.object({
 });
 
 const freeformSchema = z.object({
-  freeform: z.string().min(20, "Опишите фандом подробнее (не меньше 20 символов)"),
+  freeform: z.string().min(5, "Коротко опишите фандом (от 5 символов)"),
   geminiApiKey: z.string().min(1, "Нужен ключ Gemini"),
 });
 

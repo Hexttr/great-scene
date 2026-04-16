@@ -64,8 +64,8 @@ export default function HomePage() {
     setError("");
     setOutputUrl(null);
     setAssembledPreview("");
-    if (freeform.trim().length < 20) {
-      setError("Опишите фандом подробнее (от 20 символов).");
+    if (freeform.trim().length < 5) {
+      setError("Опишите фандом (от 5 символов).");
       return;
     }
     if (!geminiKey.trim()) {
@@ -276,7 +276,7 @@ export default function HomePage() {
             className="rounded bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
             disabled={
               !!busy ||
-              freeform.trim().length < 20 ||
+              freeform.trim().length < 5 ||
               !geminiKey.trim() ||
               !file
             }

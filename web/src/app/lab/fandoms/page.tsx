@@ -133,7 +133,7 @@ export default function FandomsPage() {
         <button
           type="button"
           className="mt-3 rounded bg-amber-600 px-3 py-2 text-sm font-medium text-zinc-950 hover:bg-amber-500 disabled:opacity-50"
-          disabled={busy || freeform.trim().length < 20 || !geminiKey.trim()}
+          disabled={busy || freeform.trim().length < 5 || !geminiKey.trim()}
           onClick={() => void onCreateFromText()}
         >
           {busy ? "Анализ и создание…" : "Разобрать с Gemini и создать"}
