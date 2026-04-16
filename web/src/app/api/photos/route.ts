@@ -51,7 +51,7 @@ export async function GET() {
   return NextResponse.json(
     list.map((p) => ({
       ...p,
-      url: `/uploads/${p.filename}`,
+      url: `/api/uploads/${p.filename}`,
     }))
   );
 }

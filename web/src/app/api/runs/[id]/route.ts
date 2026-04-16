@@ -16,6 +16,6 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   if (!run) return NextResponse.json({ error: "not found" }, { status: 404 });
   return NextResponse.json({
     ...run,
-    userPhoto: { ...run.userPhoto, url: `/uploads/${run.userPhoto.filename}` },
+    userPhoto: { ...run.userPhoto, url: `/api/uploads/${run.userPhoto.filename}` },
   });
 }

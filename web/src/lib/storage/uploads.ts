@@ -11,5 +11,5 @@ export async function saveUpload(filename: string, data: Buffer): Promise<string
   const safe = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
   const full = path.join(dir, safe);
   await writeFile(full, data);
-  return `/uploads/${safe}`;
+  return `/api/uploads/${safe}`;
 }

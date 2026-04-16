@@ -188,7 +188,9 @@ export async function POST(req: Request) {
     const outDir = uploadsDir();
     await mkdir(outDir, { recursive: true });
     const outFull = path.join(outDir, outName);
-    await writeFile(outFull, Buffer.from(out.imageBase64, "base64"));
+    const rawB64 = out.imageBase64.replace(/^data:image\/\w+;base64,/, "").trim();
+    const normalizedB64 = rawB64.replace(/-/g, "+").replace(/_/g, "/");
+    await writeFile(outFull, Buffer.from(normalizedB64, "base64"));
 
     if (!b.skipCharge && b.chargeCents > 0) {
       const wallet = await getOrCreateLabWallet();
@@ -209,7 +211,7 @@ export async function POST(req: Request) {
       data: {
         generationRunId: run.id,
         mimeType: out.mimeType,
-        path: `/uploads/${outName}`,
+        path: `/api/uploads/${outName}`,
         meta: { rawText: out.rawText } as object,
       },
     });

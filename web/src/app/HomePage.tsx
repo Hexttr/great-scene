@@ -311,9 +311,13 @@ export default function HomePage() {
             )}
             <p className="mt-3 text-sm text-zinc-500">
               <Link className="text-amber-400 hover:underline" href="/lab">
-                Открыть лабораторию
-              </Link>{" "}
-              — тонкая настройка блоков и повторные прогоны.
+                Лаборатория
+              </Link>
+              {" · "}
+              <Link className="text-amber-400 hover:underline" href="/lab/runs">
+                все прогоны
+              </Link>
+              {" — картинки и промпты сохраняются в истории."}
             </p>
           </section>
         )}
