@@ -22,6 +22,7 @@ set -a
 source ./.env
 set +a
 npm ci --include=dev
+npx prisma migrate deploy
 export NODE_ENV=production
 rm -rf .next
 npm run build

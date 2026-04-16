@@ -23,6 +23,7 @@
 | `scripts/deploy/env.example` | Шаблон переменных **без** реальных значений |
 | `scripts/upload_deploy.py` | Упаковка `web/` + `deploy/`, загрузка по SSH (пароль только из переменной окружения) |
 | `scripts/rebuild_remote.py` | Пересборка на сервере без полной переустановки |
+| `scripts/sync_web.py` | Только обновление кода `web/` поверх `/opt/great-scene` **без** перезаписи `web/.env`; затем `prisma migrate deploy`, сборка, restart |
 
 ## Переменные окружения на сервере
 

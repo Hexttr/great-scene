@@ -52,6 +52,8 @@ model Fandom {
   title            String
   canonSummary     String   @db.Text
   visualStyleNotes String?  @db.Text
+  /// Исходное свободное описание пользователя (до разбора Gemini)
+  freeformSource   String?  @db.Text
   createdAt        DateTime @default(now())
 
   scenes Scene[]
