@@ -1,0 +1,259 @@
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- Photos & analysis ---
+
+model UserPhoto {
+  id        String      @id @default(cuid())
+  filename  String
+  mimeType  String
+  width     Int?
+  height    Int?
+  status    PhotoStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+
+  analyses PhotoAnalysis[]
+  runs     GenerationRun[]
+}
+
+enum PhotoStatus {
+  PENDING
+  OK
+  REJECTED
+}
+
+model PhotoAnalysis {
+  id                  String   @id @default(cuid())
+  userPhotoId         String
+  userPhoto           UserPhoto @relation(fields: [userPhotoId], references: [id], onDelete: Cascade)
+  subjectCount        Int
+  genderPresentation  String?
+  faceCoverage        Float?
+  poseSummary         String?  @db.Text
+  expressionSummary   String?  @db.Text
+  warnings            Json?
+  fullAnalysis        Json?
+  createdAt           DateTime @default(now())
+}
+
+// --- Fandoms & scenes ---
+
+model Fandom {
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  title            String
+  canonSummary     String   @db.Text
+  visualStyleNotes String?  @db.Text
+  createdAt        DateTime @default(now())
+
+  scenes Scene[]
+  runs   GenerationRun[]
+}
+
+enum SceneStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum SceneSourceType {
+  GENERATED
+  MANUAL
+  IMPORTED
+}
+
+model Scene {
+  id               String          @id @default(cuid())
+  fandomId         String
+  fandom           Fandom          @relation(fields: [fandomId], references: [id], onDelete: Cascade)
+  title            String
+  scenePromptSeed  String          @db.Text
+  compositionNotes String?         @db.Text
+  emotionNotes     String?         @db.Text
+  lightingNotes    String?         @db.Text
+  cameraNotes      String?         @db.Text
+  status           SceneStatus     @default(ACTIVE)
+  sourceType       SceneSourceType @default(GENERATED)
+  fingerprint      String
+  createdAt        DateTime        @default(now())
+
+  runs GenerationRun[]
+
+  @@unique([fandomId, fingerprint])
+  @@index([fandomId])
+}
+
+// --- Prompt templates (block instances) ---
+
+model PromptTemplate {
+  id        String   @id @default(cuid())
+  name      String
+  version   Int      @default(1)
+  notes     String?  @db.Text
+  createdAt DateTime @default(now())
+
+  blocks PromptBlockInstance[]
+  runs   GenerationRun[]
+}
+
+model PromptBlockInstance {
+  id         String   @id @default(cuid())
+  templateId String
+  template   PromptTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  blockKey   String
+  label      String?
+  content    String   @db.Text
+  enabled    Boolean  @default(true)
+  strength   Float    @default(1)
+  sortOrder  Int      @default(0)
+
+  @@index([templateId])
+}
+
+// --- Generation runs ---
+
+enum GenerationStatus {
+  PENDING
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
+model GenerationRun {
+  id               String            @id @default(cuid())
+  userPhotoId      String
+  userPhoto        UserPhoto         @relation(fields: [userPhotoId], references: [id], onDelete: Cascade)
+  fandomId         String
+  fandom           Fandom            @relation(fields: [fandomId], references: [id], onDelete: Cascade)
+  sceneId          String?
+  scene            Scene?            @relation(fields: [sceneId], references: [id], onDelete: SetNull)
+  promptTemplateId String?
+  promptTemplate   PromptTemplate?   @relation(fields: [promptTemplateId], references: [id], onDelete: SetNull)
+
+  assembledPrompt String            @db.Text
+  blocksSnapshot  Json?
+  model           String
+  modelParams     Json?
+  geminiKeyAlias  String?
+  status          GenerationStatus  @default(PENDING)
+  errorMessage    String?           @db.Text
+  latencyMs       Int?
+  costCents       Int?
+  createdAt       DateTime          @default(now())
+
+  assets  GenerationAsset[]
+  reviews QualityReview[]
+  charge  GenerationCharge?
+
+  @@index([fandomId])
+  @@index([createdAt])
+}
+
+model GenerationAsset {
+  id              String        @id @default(cuid())
+  generationRunId String
+  generationRun   GenerationRun @relation(fields: [generationRunId], references: [id], onDelete: Cascade)
+  kind            String        @default("output")
+  mimeType        String
+  path            String
+  width           Int?
+  height          Int?
+  meta            Json?
+  createdAt       DateTime      @default(now())
+
+  @@index([generationRunId])
+}
+
+model QualityReview {
+  id                   String        @id @default(cuid())
+  generationRunId      String
+  generationRun        GenerationRun @relation(fields: [generationRunId], references: [id], onDelete: Cascade)
+  similarityScore      Int?
+  cinematicScore       Int?
+  integrationScore     Int?
+  fandomFidelityScore  Int?
+  notes                String?       @db.Text
+  createdAt            DateTime      @default(now())
+
+  @@index([generationRunId])
+}
+
+// --- Billing foundation (ledger) ---
+
+model Wallet {
+  id           String   @id @default(cuid())
+  label        String   @default("lab")
+  balanceCents Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  transactions   Transaction[]
+  paymentIntents PaymentIntent[]
+  charges        GenerationCharge[]
+}
+
+enum TransactionType {
+  MOCK_TOPUP
+  MOCK_CHARGE
+  GENERATION_CHARGE
+  PAYMENT
+  ADJUSTMENT
+}
+
+model Transaction {
+  id           String          @id @default(cuid())
+  walletId     String
+  wallet       Wallet          @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  type         TransactionType
+  amountCents  Int
+  balanceAfter Int
+  reference    String?
+  metadata     Json?
+  createdAt    DateTime        @default(now())
+
+  generationCharges GenerationCharge[]
+
+  @@index([walletId])
+}
+
+enum PaymentIntentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model PaymentIntent {
+  id          String              @id @default(cuid())
+  walletId    String
+  wallet      Wallet              @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  amountCents Int
+  status      PaymentIntentStatus @default(PENDING)
+  provider    String              @default("mock")
+  externalId  String?
+  metadata    Json?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([walletId])
+}
+
+model GenerationCharge {
+  id              String        @id @default(cuid())
+  generationRunId String        @unique
+  generationRun   GenerationRun @relation(fields: [generationRunId], references: [id], onDelete: Cascade)
+  walletId        String
+  wallet          Wallet        @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  amountCents     Int
+  transactionId   String?
+  transaction     Transaction?  @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  createdAt       DateTime      @default(now())
+
+  @@index([walletId])
+}

@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: greatscene
+      POSTGRES_PASSWORD: greatscene
+      POSTGRES_DB: greatscene
+    ports:
+      - "54321:5432"
+    volumes:
+      - greatscene_pg:/var/lib/postgresql/data
+
+volumes:
+  greatscene_pg:

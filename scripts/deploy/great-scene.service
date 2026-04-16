@@ -1,0 +1,22 @@
+[Unit]
+Description=Great Scene (Next.js lab)
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+User=greatscene
+Group=greatscene
+WorkingDirectory=/opt/great-scene/web
+Environment=NODE_ENV=production
+EnvironmentFile=-/opt/great-scene/web/.env
+ExecStart=/usr/bin/npm run start -- -p 3002 -H 127.0.0.1
+Restart=on-failure
+RestartSec=5
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
