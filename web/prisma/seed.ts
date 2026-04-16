@@ -2,7 +2,7 @@ import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
-import { getDefaultPromptBlocks } from "../src/lib/prompt-builder/default-blocks";
+import { ensureDefaultPromptTemplateExists } from "../src/lib/prompt-builder/ensure-default-template";
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) throw new Error("DATABASE_URL missing for seed");
@@ -36,31 +36,7 @@ async function main() {
     },
   });
 
-  const blocks = getDefaultPromptBlocks();
-  const existing = await prisma.promptTemplate.findFirst({
-    where: {
-      OR: [{ name: "Default Lab Template" }, { name: "Базовый шаблон лаборатории" }],
-    },
-  });
-  if (!existing) {
-    await prisma.promptTemplate.create({
-      data: {
-        name: "Базовый шаблон лаборатории",
-        version: 1,
-        notes: "Начальные блоки промпта для лаборатории (seed)",
-        blocks: {
-          create: blocks.map((b) => ({
-            blockKey: b.blockKey,
-            label: b.label ?? null,
-            content: b.content,
-            enabled: b.enabled,
-            strength: b.strength,
-            sortOrder: b.sortOrder,
-          })),
-        },
-      },
-    });
-  }
+  await ensureDefaultPromptTemplateExists();
 
   await seedLabWallet();
 

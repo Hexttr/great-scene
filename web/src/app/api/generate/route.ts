@@ -12,6 +12,7 @@ import { pickRandomScene } from "@/lib/scene-generation";
 import { mockChargeGeneration, getOrCreateLabWallet } from "@/lib/billing/mock";
 import { uploadsDir } from "@/lib/storage/uploads";
 import { mkdir } from "node:fs/promises";
+import { resolveDefaultPromptTemplate } from "@/lib/prompt-builder/ensure-default-template";
 
 const bodySchema = z.object({
   userPhotoId: z.string(),
@@ -76,17 +77,12 @@ export async function POST(req: Request) {
         where: { id: b.promptTemplateId },
         include: { blocks: { orderBy: { sortOrder: "asc" } } },
       })
-    : await prisma.promptTemplate.findFirst({
-        where: {
-          OR: [{ name: "Default Lab Template" }, { name: "Базовый шаблон лаборатории" }],
-        },
-        include: { blocks: { orderBy: { sortOrder: "asc" } } },
-      });
+    : await resolveDefaultPromptTemplate();
 
   if (!template) {
     return NextResponse.json(
-      { error: "Нет шаблона промпта — выполните prisma seed (npm run db:seed)" },
-      { status: 400 }
+      { error: "Не удалось подготовить шаблон промпта" },
+      { status: 500 }
     );
   }
 
