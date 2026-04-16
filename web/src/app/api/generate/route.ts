@@ -212,7 +212,7 @@ export async function POST(req: Request) {
         generationRunId: run.id,
         mimeType: out.mimeType,
         path: `/api/uploads/${outName}`,
-        meta: { rawText: out.rawText } as object,
+        meta: { rawText: out.rawText, geminiAttempts: out.attemptsUsed } as object,
       },
     });
 
