@@ -5,6 +5,9 @@ export default function LabLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-full bg-zinc-950 text-zinc-100">
       <header className="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur sticky top-0 z-10">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-4 py-3">
+          <Link href="/" className="text-sm text-zinc-500 hover:text-zinc-300">
+            На главную
+          </Link>
           <Link href="/lab" className="font-semibold tracking-tight text-amber-400">
             Great Scene Lab
           </Link>
